@@ -31,7 +31,7 @@ class HelperClassGeneratorInfo {
         sb.append(jsonParseFunc())
         sb.append("\n")
         sb.append("\n")
-        sb.append(jsonGenFunc())
+//        sb.append(jsonGenFunc())
         return sb.toString()
     }
 

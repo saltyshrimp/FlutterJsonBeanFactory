@@ -71,53 +71,66 @@ class FlutterBeanFactoryAction : AnAction() {
                     content.append("\n")
 
                     ////
-                    content.append("""class JsonConvert<T> {
+                    content.append("""
+typedef ConvertFun = dynamic Function(Map<String, dynamic> json);
+Map<String, ConvertFun> _converts;
+
+typedef CreateListFun = dynamic Function();
+Map<String, CreateListFun> _createLists;
+
+class JsonConvert<T> {
 	T fromJson(Map<String, dynamic> json) {
-		return _getFromJson<T>(runtimeType, this, json);
+		return null;//_getFromJson<T>(runtimeType, this, json);
 	}""")
 
 ///
                     //tojson
-                    content.append("\n\n");
-                    content.append("""  Map<String, dynamic> toJson() {
-		return _getToJson<T>(runtimeType, this);
-  }""")
-                    content.append("\n\n");
-                    content.append("  static _getFromJson<T>(Type type, data, json) {\n" +
-                            "    switch (type) {")
-                    allClass.forEach {
-                        it.first.classes.forEach { itemFile ->
-                            content.append("\t\t\tcase ${itemFile.className}:\n")
-                            content.append("\t\t\treturn ${itemFile.className.toLowerCaseFirstOne()}FromJson(data as ${itemFile.className}, json) as T;")
-                        }
-                    }
-                    content.append("    }\n" +
-                            "    return data as T;\n" +
-                            "  }")
-                    content.append("\n\n");
-                    content.append("  static _getToJson<T>(Type type, data) {\n" +
-                            "\t\tswitch (type) {")
-                    allClass.forEach {
-                        it.first.classes.forEach { itemFile ->
-                            content.append("\t\t\tcase ${itemFile.className}:\n")
-                            content.append("\t\t\treturn ${itemFile.className.toLowerCaseFirstOne()}ToJson(data as ${itemFile.className});")
-                        }
-                    }
-                    content.append("    }\n" +
-                            "    return data as T;\n" +
-                            "  }")
-                    content.append("\n");
+//                    content.append("\n\n");
+//                    content.append("""  Map<String, dynamic> toJson() {
+//		return _getToJson<T>(runtimeType, this);
+//  }""")
+//                    content.append("\n\n");
+//                    content.append("  static _getFromJson<T>(Type type, data, json) {\n" +
+//                            "    switch (type) {")
+//                    allClass.forEach {
+//                        it.first.classes.forEach { itemFile ->
+//                            content.append("\t\t\tcase ${itemFile.className}:\n")
+//                            content.append("\t\t\treturn ${itemFile.className.toLowerCaseFirstOne()}FromJson(data as ${itemFile.className}, json) as T;")
+//                        }
+//                    }
+//                    content.append("    }\n" +
+//                            "    return data as T;\n" +
+//                            "  }")
+//                    content.append("\n\n");
+//                    content.append("  static _getToJson<T>(Type type, data) {\n" +
+//                            "\t\tswitch (type) {")
+//                    allClass.forEach {
+//                        it.first.classes.forEach { itemFile ->
+//                            content.append("\t\t\tcase ${itemFile.className}:\n")
+//                            content.append("\t\t\treturn ${itemFile.className.toLowerCaseFirstOne()}ToJson(data as ${itemFile.className});")
+//                        }
+//                    }
+//                    content.append("    }\n" +
+//                            "    return data as T;\n" +
+//                            "  }")
+//                    content.append("\n");
                     //_fromJsonSingle
-                    content.append("  //Go back to a single instance by type\n" +
+                    content.append("\n\n  //Go back to a single instance by type\n" +
                             "  static _fromJsonSingle(String type, json) {\n" +
-                            "    switch (type) {")
+                            "    if (_converts == null) {\n" +
+                            "      _converts = Map();\n")
+//                            "    switch (type) {")
                     allClass.forEach {
                         it.first.classes.forEach { itemFile ->
-                            content.append("\t\t\tcase '${itemFile.className}':\n")
-                            content.append("\t\t\treturn ${itemFile.className}().fromJson(json);")
+                            content.append("\t\t\t_converts['${itemFile.className}'] = (json) => ${itemFile.className.toLowerCaseFirstOne()}FromJson(${itemFile.className}(), json);\n")
+//                            content.append("\t\t\tcase '${itemFile.className}':\n")
+//                            content.append("\t\t\treturn ${itemFile.className}().fromJson(json);")
                         }
                     }
-                    content.append("    }\n" +
+                    content.append("    }\n\n" +
+                            "    if (_converts.containsKey(type)) {\n" +
+                            "      return _converts[type].call(json);\n" +
+                            "    }\n\n" +
                             "    return null;\n" +
                             "  }")
 
@@ -125,14 +138,20 @@ class FlutterBeanFactoryAction : AnAction() {
                     content.append("\n\n");
                     content.append("  //empty list is returned by type\n" +
                             "  static _getListFromType(String type) {\n" +
-                            "    switch (type) {")
+                            "    if (_createLists == null) {\n" +
+                            "      _createLists = Map();\n")
+//                            "    switch (type) {")
                     allClass.forEach {
                         it.first.classes.forEach { itemFile ->
-                            content.append("\t\t\tcase '${itemFile.className}':\n")
-                            content.append("\t\t\treturn List<${itemFile.className}>();")
+                            content.append("\t\t\t_createLists['${itemFile.className}'] = () => List<${itemFile.className}>();\n")
+//                            content.append("\t\t\tcase '${itemFile.className}':\n")
+//                            content.append("\t\t\treturn List<${itemFile.className}>();")
                         }
                     }
-                    content.append("    }\n" +
+                    content.append("    }\n\n" +
+                            "    if (_createLists.containsKey(type)) {\n" +
+                            "      return _createLists[type].call();\n" +
+                            "    }\n\n" +
                             "    return null;\n" +
                             "  }")
                     content.append("\n\n")
