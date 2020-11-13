@@ -124,7 +124,10 @@ object FileHelpers {
         //导包
         //辅助主类的包名
         content.append(packageName)
-        content.append("\n")
+        content.append("\n\n")
+
+        content.append("import 'base/json_convert_content.dart';")
+        content.append("\n\n")
         //所有字段
         val allFields = helperClassGeneratorInfos?.classes?.flatMap {
             it.fields.mapNotNull { itemFiled ->
