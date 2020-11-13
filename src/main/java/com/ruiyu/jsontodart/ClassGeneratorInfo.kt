@@ -90,7 +90,7 @@ class HelperClassGeneratorInfo {
                         } else {
                             "(json['$getJsonName'] as List).forEach((v) {\n\t\t\tdata.$name.add(DateTime.parse(v));\n\t\t});".trimIndent()
                         }
-                    else -> "(json['$getJsonName'] as List).forEach((v) {\n\t\t\tdata.$name.add(new ${listSubType}().fromJson(v));\n\t\t});".trimIndent()
+                    else -> "(json['$getJsonName'] as List).forEach((v) {\n\t\t\tdata.$name.add(JsonConvert.fromJsonAsT<${listSubType}>(v));\n\t\t});".trimIndent()
                 }
                 "if (json['$getJsonName'] != null) {\n\t\tdata.$name = new List<${listSubType}>();\n\t\t$value\n\t}"
             }
